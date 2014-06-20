@@ -1,28 +1,44 @@
 package qtrim
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/baruchlubinsky/plotly"
 )
 
 const bins = 40
 
-type BoxDataPoint struct {
-	Name string    `json:"name"`
-	Y    []float32 `json:"y"`
-}
+const QUALITYLAYOUT = `{
+  "title":"Distribution of quality scores",
+  "yaxis":{
+    "title": "Quality score",
+    "zeroline": true,
+    "overlaying":false,
+    "side":"left",
+    "anchor":"x"
+  },
+  "yaxis2":{
+    "title":"Coverage",
+    "overlaying":"y",
+    "side":"right",
+    "anchor":"x"
+  },
+  "xaxis":{
+    "title":"Read position"
+  },
+  "showlegend":false
+}`
 
-func BoxAndWhisker(inputPath string, binSize int) string {
+func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 	boxes := make([][]int, 0, 400/binSize)
 	totals := make([]int, 0, cap(boxes))
 	scanFile(inputPath, func(read Read) (interface{}, error) {
-		for i, b := range read.QualLine {
-			bin := i / 10
+		for i := 0; i < len(read.QualLine)-1; i = i + binSize {
+			bin := i / binSize
 			for len(boxes) < bin+1 {
 				boxes = append(boxes, make([]int, bins+1))
 				totals = append(totals, 0)
 			}
-			score := Score(b)
+			score := Score(read.QualLine[i])
 			if score < 0 {
 				continue
 			}
@@ -31,25 +47,71 @@ func BoxAndWhisker(inputPath string, binSize int) string {
 		}
 		return nil, nil
 	})
-	points := []float32{0, 0.25, 0.4, 0.6, 0.75, 0.99}
-	result := make([]BoxDataPoint, len(boxes))
+	result := make([]plotly.Trace, len(boxes))
 	for i, _ := range result {
-		result[i].Y = make([]float32, len(points))
+		points := 20.0
+		result[i].Y = make([]interface{}, int(points))
+		result[i].X = make([]interface{}, int(points))
 		result[i].Name = fmt.Sprintf("%v", i*binSize)
+		result[i].YAxis = "y"
+		result[i].Type = "box"
+		result[i].Line = plotly.Line{
+			Color: "rgb(0.1, 0.3, 0.9)",
+		}
+		result[i].Marker = plotly.Marker{
+			Line:    plotly.Line{},
+			Opacity: 0.0,
+		}
 		data := boxes[i]
 		accumulation := 0
 		j := 0
-		for score, count := range data {
-			accumulation += count
-			if float32(accumulation)/float32(totals[i]) > points[j] {
-				result[i].Y[j] = float32(score)
+		total := float64(totals[i])
+		for score := 0; score <= 40; score++ {
+			accumulation += data[score]
+			for accumulation > 0 && float64(accumulation)/total > (1.0/points)*float64(j) {
+				result[i].Y[j] = float64(score)
+				result[i].X[j] = float64(i * binSize)
 				j++
+				if float64(j) > points-1 {
+					break
+				}
 			}
-			if j > len(points)-1 {
+			if float64(j) > points-1 {
 				break
 			}
 		}
 	}
-	data, _ := json.Marshal(result)
-	return string(data)
+	counts := plotly.Trace{
+		Y:     make([]interface{}, len(totals)),
+		X:     make([]interface{}, len(totals)),
+		Name:  "Coverage",
+		YAxis: "y2",
+		Type:  "scatter",
+		Line: plotly.Line{
+			Color: "rgb(0.2, 0.8, 0.1)",
+		},
+		Marker: plotly.Marker{
+			Line:    plotly.Line{},
+			Opacity: 1.0,
+		},
+	}
+	for i, count := range totals {
+		counts.X[i] = i * binSize
+		counts.Y[i] = count
+	}
+	result = append(result, counts)
+	return plotly.Figure{
+		Data:   result,
+		Layout: QUALITYLAYOUT,
+	}
+}
+
+func QualityTrendPlot(input string, output string) error {
+	fig := BoxAndWhisker(input, 10)
+	url, err := plotly.Create("qtrim temp", fig, true)
+	if err != nil {
+		return err
+	}
+	err = plotly.Save(url.Id(), output)
+	return err
 }
