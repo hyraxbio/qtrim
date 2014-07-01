@@ -39,12 +39,12 @@ func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 				boxes = append(boxes, make([]int, bins+1))
 				totals = append(totals, 0)
 			}
-			score := Score(read.QualLine[i])
+			score := int(Score(read.QualLine[i]))
 			if score < 0 {
 				continue
 			}
-			if bin > len(boxes) || int(score) > bins {
-				fmt.Printf("%v\n%v - %v\n", bin, score, int(score))
+			if score > bins {
+				score = bins
 			}
 			boxes[bin][int(score)]++
 			totals[bin]++
