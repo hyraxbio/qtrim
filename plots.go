@@ -2,6 +2,7 @@ package qtrim
 
 import (
 	"fmt"
+	"github.com/SANBIHIV/biotools/bioutil"
 	"github.com/baruchlubinsky/plotly"
 )
 
@@ -31,7 +32,7 @@ const QUALITYLAYOUT = `{
 func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 	boxes := make([][]int, 0, 400/binSize)
 	totals := make([]int, 0, cap(boxes))
-	scanFile(inputPath, func(read Read) (interface{}, error) {
+	bioutil.ScanFastqFile(inputPath, func(read bioutil.Read) (interface{}, error) {
 		for i := 0; i < len(read.QualLine)-1; i = i + binSize {
 			bin := i / binSize
 			for len(boxes) < bin+1 {
@@ -41,6 +42,9 @@ func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 			score := Score(read.QualLine[i])
 			if score < 0 {
 				continue
+			}
+			if bin > len(boxes) || int(score) > bins {
+				fmt.Printf("%v\n%v - %v\n", bin, score, int(score))
 			}
 			boxes[bin][int(score)]++
 			totals[bin]++
@@ -106,9 +110,9 @@ func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 	}
 }
 
-func QualityTrendPlot(input string, output string) error {
+func QualityTrendPlot(input string, name string, output string) error {
 	fig := BoxAndWhisker(input, 10)
-	url, err := plotly.Create("qtrim temp", fig, true)
+	url, err := plotly.Create(name, fig, true)
 	if err != nil {
 		return err
 	}
