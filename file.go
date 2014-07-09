@@ -24,7 +24,19 @@ func TrimFile(inputPath string, outputPath string, mean int, window int, minLeng
 		output.Flush()
 		outputFile.Close()
 	}()
-	results, err := bioutil.ScanFastqFile(inputPath, func(read bioutil.Read) (interface{}, error) {
+	inputFile, err := os.Open(inputPath)
+	if err != nil {
+		return nil, err
+	}
+	input := bufio.NewReader(inputFile)
+	defer func() {
+		inputFile.Close()
+	}()
+	return TrimIO(input, output, mean, window, minLength, trimN)
+}
+
+func TrimIO(input *bufio.Reader, output *bufio.Writer, mean int, window int, minLength int, trimN bool) ([]interface{}, error) {
+	results, err := bioutil.ScanFastq(input, func(read bioutil.Read) (interface{}, error) {
 		if trimN {
 			read.SeqLine = []byte(strings.TrimRight(string(read.SeqLine), "N\n"))
 		}

@@ -8,20 +8,28 @@ import (
 
 const bins = 40
 
-const QUALITYLAYOUT = `{
+const QualityLayout = `{
   "title":"Distribution of quality scores",
   "yaxis":{
     "title": "Quality score",
     "zeroline": true,
     "overlaying":false,
     "side":"left",
-    "anchor":"x"
+    "anchor":"x",
+		"range":[
+		0,
+		40
+		]
   },
   "yaxis2":{
     "title":"Coverage",
     "overlaying":"y",
     "side":"right",
-    "anchor":"x"
+    "anchor":"x",
+		"range":[
+		0,
+		%v
+		]
   },
   "xaxis":{
     "title":"Read position"
@@ -106,7 +114,7 @@ func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 	result = append(result, counts)
 	return plotly.Figure{
 		Data:   result,
-		Layout: QUALITYLAYOUT,
+		Layout: fmt.Sprintf(QualityLayout, totals[0]),
 	}
 }
 
