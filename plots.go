@@ -118,10 +118,11 @@ func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 	}
 }
 
-func QualityTrendPlot(input string, name string, output string) error {
+func QualityTrendPlot(input string, name string, output string, public bool) error {
 	fig := BoxAndWhisker(input, 10)
-	url, err := plotly.Create(name, fig, true)
+	url, err := plotly.Create(name, fig, public)
 	if err != nil {
+		fmt.Println(fig)
 		return err
 	}
 	err = plotly.Save(url.Id(), output)
