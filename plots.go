@@ -40,7 +40,7 @@ const QualityLayout = `{
 func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 	boxes := make([][]int, 0, 400/binSize)
 	totals := make([]int, 0, cap(boxes))
-	bioutil.ScanFastqFile(inputPath, func(read bioutil.Read) (interface{}, error) {
+	bioutil.ScanFastqFile(inputPath, func(read *bioutil.Read) (interface{}, error) {
 		for i := 0; i < len(read.QualLine)-1; i = i + binSize {
 			bin := i / binSize
 			for len(boxes) < bin+1 {
