@@ -2,7 +2,7 @@ package qtrim
 
 import (
 	"fmt"
-	"github.com/SANBIHIV/biotools/bioutil"
+	"github.com/SANBIHIV/bioutil"
 	"github.com/baruchlubinsky/plotly"
 )
 

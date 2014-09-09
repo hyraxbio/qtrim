@@ -2,7 +2,7 @@ package qtrim
 
 import (
 	"bufio"
-	"github.com/SANBIHIV/biotools/bioutil"
+	"github.com/SANBIHIV/bioutil"
 	"os"
 	"strings"
 )
