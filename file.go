@@ -2,7 +2,7 @@ package qtrim
 
 import (
 	"bufio"
-	"github.com/SANBIHIV/bioutil"
+	"hyraxbio.kilnhg.com/golang/bioutil.git"
 	"os"
 	"strings"
 )

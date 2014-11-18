@@ -2,7 +2,7 @@ package qtrim
 
 import (
 	"fmt"
-	"github.com/SANBIHIV/bioutil"
+	"hyraxbio.kilnhg.com/golang/bioutil.git"
 	"github.com/baruchlubinsky/plotly"
 )
 
