@@ -2,8 +2,8 @@ package qtrim
 
 import (
 	"fmt"
-	"hyraxbio.kilnhg.com/golang/bioutil.git"
 	"github.com/baruchlubinsky/plotly"
+	"hyraxbio.kilnhg.com/golang/bioutil.git"
 )
 
 const bins = 40
@@ -37,17 +37,17 @@ const QualityLayout = `{
   "showlegend":false
 }`
 
-func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
+func BoxAndWhisker(input chan bioutil.Read, binSize int) plotly.Figure {
 	boxes := make([][]int, 0, 400/binSize)
 	totals := make([]int, 0, cap(boxes))
-	bioutil.ScanFastqFile(inputPath, func(read *bioutil.Read) (interface{}, error) {
-		for i := 0; i < len(read.QualLine)-1; i = i + binSize {
+	for read := range input {
+		for i := 0; i < len(read.Quality()); i = i + binSize {
 			bin := i / binSize
 			for len(boxes) < bin+1 {
 				boxes = append(boxes, make([]int, bins+1))
 				totals = append(totals, 0)
 			}
-			score := int(Score(read.QualLine[i]))
+			score := int(Score(read.QualityScore(i)))
 			if score < 0 {
 				continue
 			}
@@ -57,8 +57,8 @@ func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 			boxes[bin][int(score)]++
 			totals[bin]++
 		}
-		return nil, nil
-	})
+		// return nil, nil
+	}
 	result := make([]plotly.Trace, len(boxes))
 	for i, _ := range result {
 		points := 20.0
@@ -118,7 +118,7 @@ func BoxAndWhisker(inputPath string, binSize int) plotly.Figure {
 	}
 }
 
-func QualityTrendPlot(input string, name string, output string, public bool) error {
+func QualityTrendPlot(input chan bioutil.Read, name string, output string, public bool) error {
 	fig := BoxAndWhisker(input, 10)
 	url, err := plotly.Create(name, fig, public)
 	if err != nil {

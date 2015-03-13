@@ -1,15 +1,21 @@
 package qtrim
 
+import (
+	"hyraxbio.kilnhg.com/golang/bioutil.git"
+)
+
 var base byte = []byte("!")[0]
 
 // Trim a single line.
 // Returns the length of the valid sequence, or 0 to discard.
 // trimmed = original[0:cutoff - 1]
-func Trim(line []byte, mean int, window int, minLength int) (cutoff int, originalMean float32, finalMean float32) {
+func Trim(read bioutil.Read, mean int, window int, minLength int) (cutoff int, originalMean float32, finalMean float32) {
 	if window > minLength {
 		panic("QTrim: window must be <= minimum read length")
 	}
-	length := len(line)
+
+	line := read.Quality()
+	length := read.Length()
 
 	total := 0
 	windowTotal := 0

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"hyraxbio.kilnhg.com/golang/bioutil.git"
 	"os"
-	"strings"
 )
 
 type Stat struct {
@@ -14,7 +13,7 @@ type Stat struct {
 	FinalMean    float32
 }
 
-func TrimFile(inputPath string, outputPath string, mean int, window int, minLength int, trimN bool) ([]interface{}, error) {
+func TrimFile(inputPath string, outputPath string, mean int, window int, minLength int) ([]Stat, error) {
 	outputFile, err := os.Create(outputPath)
 	if err != nil {
 		return nil, err
@@ -32,16 +31,30 @@ func TrimFile(inputPath string, outputPath string, mean int, window int, minLeng
 	defer func() {
 		inputFile.Close()
 	}()
-	return TrimIO(input, output, mean, window, minLength, trimN)
+	return TrimIO(input, output, mean, window, minLength), nil
 }
 
-func TrimIO(input *bufio.Reader, output *bufio.Writer, mean int, window int, minLength int, trimN bool) ([]interface{}, error) {
-	results, err := bioutil.ScanFastq(input, func(read *bioutil.Read) (interface{}, error) {
-		if trimN {
-			read.SeqLine = []byte(strings.TrimRight(string(read.SeqLine), "N\n"))
+func TrimIO(input *bufio.Reader, output *bufio.Writer, mean int, window int, minLength int) []Stat {
+	inputChan := make(chan bioutil.Read)
+	outputChan := make(chan bioutil.Read)
+	go bioutil.ScanFastqChan(input, inputChan)
+	go func() {
+		for read := range outputChan {
+			output.Write(read.Data())
 		}
-		length := len(read.SeqLine)
-		count, original, final := Trim(read.QualLine[0:length], mean, window, minLength)
+	}()
+
+	results := TrimPipe(inputChan, outputChan, mean, window, minLength)
+
+	return results
+}
+
+func TrimPipe(input chan bioutil.Read, output chan bioutil.Read, mean int, window int, minLength int) []Stat {
+	results := make([]Stat, 0)
+	for read := range input {
+
+		length := len(read.Sequence())
+		count, original, final := Trim(read, mean, window, minLength)
 		result := Stat{
 			length,
 			count,
@@ -49,61 +62,12 @@ func TrimIO(input *bufio.Reader, output *bufio.Writer, mean int, window int, min
 			final,
 		}
 		if count != 0 {
-			output.Write(read.HeadLine)
-			output.Write(read.SeqLine[0:count])
-			output.WriteByte('\n')
-			output.Write(read.SepLine)
-			output.Write(read.QualLine[0:count])
-			output.WriteByte('\n')
+			trimmed := length - count
+			read.TrimRight(trimmed)
+			output <- read
 		}
-		return result, nil
-	})
-	return results, err
-}
-
-func TrimFileFilter(inputPath string, outputPath string, filter bioutil.SequenceFilterFunc, mean int, window int, minLength int, trimN bool) ([]interface{}, error) {
-	outputFile, err := os.Create(outputPath)
-	if err != nil {
-		return nil, err
+		results = append(results, result)
 	}
-	output := bufio.NewWriter(outputFile)
-	defer func() {
-		output.Flush()
-		outputFile.Close()
-	}()
-	inputFile, err := os.Open(inputPath)
-	if err != nil {
-		return nil, err
-	}
-	input := bufio.NewReader(inputFile)
-	defer func() {
-		inputFile.Close()
-	}()
-	return TrimIOFilter(input, output, filter, mean, window, minLength, trimN)
-}
-
-func TrimIOFilter(input *bufio.Reader, output *bufio.Writer, filter bioutil.SequenceFilterFunc, mean int, window int, minLength int, trimN bool) ([]interface{}, error) {
-	results, err := bioutil.ScanFastqFilter(input, filter, func(read *bioutil.Read) (interface{}, error) {
-		if trimN {
-			read.SeqLine = []byte(strings.TrimRight(string(read.SeqLine), "N\n"))
-		}
-		length := len(read.SeqLine)
-		count, original, final := Trim(read.QualLine[0:length], mean, window, minLength)
-		result := Stat{
-			length,
-			count,
-			original,
-			final,
-		}
-		if count != 0 {
-			output.Write(read.HeadLine)
-			output.Write(read.SeqLine[0:count])
-			output.WriteByte('\n')
-			output.Write(read.SepLine)
-			output.Write(read.QualLine[0:count])
-			output.WriteByte('\n')
-		}
-		return result, nil
-	})
-	return results, err
+	close(output)
+	return results
 }
