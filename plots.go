@@ -3,7 +3,7 @@ package qtrim
 import (
 	"fmt"
 	"github.com/baruchlubinsky/plotly"
-	"hyraxbio.kilnhg.com/golang/bioutil.git"
+	"code.hyraxbio.co.za/bioutil"
 )
 
 const bins = 40

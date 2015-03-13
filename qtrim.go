@@ -1,7 +1,7 @@
 package qtrim
 
 import (
-	"hyraxbio.kilnhg.com/golang/bioutil.git"
+	"code.hyraxbio.co.za/bioutil"
 )
 
 var base byte = []byte("!")[0]

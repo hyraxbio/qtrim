@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"hyraxbio.kilnhg.com/golang/qtrim.git"
+	"code.hyraxbio.co.za/qtrim"
 	"os"
 )
 
