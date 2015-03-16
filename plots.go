@@ -1,9 +1,9 @@
 package qtrim
 
 import (
-	"fmt"
-	"github.com/baruchlubinsky/plotly"
 	"code.hyraxbio.co.za/bioutil"
+	"fmt"
+	plotly "github.com/baruchlubinsky/go-plotly"
 )
 
 const bins = 40
