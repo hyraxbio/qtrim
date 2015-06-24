@@ -3,6 +3,7 @@ package qtrim
 import (
 	"bufio"
 	"code.hyraxbio.co.za/bioutil"
+	"code.hyraxbio.co.za/bioutil/dnaio"
 	"os"
 )
 
@@ -37,7 +38,7 @@ func TrimFile(inputPath string, outputPath string, mean int, window int, minLeng
 func TrimIO(input *bufio.Reader, output *bufio.Writer, mean int, window int, minLength int) []Stat {
 	inputChan := make(chan bioutil.Read)
 	outputChan := make(chan bioutil.Read)
-	go bioutil.ScanFastqChan(input, inputChan)
+	go dnaio.ScanFastqChan(input, inputChan)
 	go func() {
 		for read := range outputChan {
 			output.Write(read.Data())
@@ -63,8 +64,8 @@ func TrimPipe(input chan bioutil.Read, output chan bioutil.Read, mean int, windo
 		}
 		if count != 0 {
 			trimmed := length - count
-			read.TrimRight(trimmed)
-			output <- read
+			trimmedRead = read.TrimRight(trimmed)
+			output <- trimmedRead
 		}
 		results = append(results, result)
 	}
