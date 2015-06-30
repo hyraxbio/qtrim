@@ -38,7 +38,7 @@ func TrimFile(inputPath string, outputPath string, mean int, window int, minLeng
 func TrimIO(input *bufio.Reader, output *bufio.Writer, mean int, window int, minLength int) []Stat {
 	inputChan := make(chan bioutil.Read)
 	outputChan := make(chan bioutil.Read)
-	go bioutil.ScanFastqChan(input, inputChan)
+	go dnaio.ScanFastqChan(input, inputChan)
 	go func() {
 		for read := range outputChan {
 			output.Write(read.Data())
