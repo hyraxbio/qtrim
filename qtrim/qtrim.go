@@ -26,14 +26,12 @@ func main() {
 func Trim() {
 	var inputFile, outputFile string
 	var mean, window, minLength int
-	var trimN bool
 	flags := flag.NewFlagSet("trim", flag.ExitOnError)
 	flags.StringVar(&inputFile, "input", "", "Name of the fastq input file. Otherwise STDIN.")
 	flags.StringVar(&outputFile, "output", "", "Name of the output file. Otherwise STDOUT.")
 	flags.IntVar(&mean, "mean", 20, "Mean quality of output sequences.")
 	flags.IntVar(&window, "window", 50, "Size of trailing window.")
 	flags.IntVar(&minLength, "length", 50, "Minimum sequence length.")
-	flags.BoolVar(&trimN, "trimn", true, "Remove trailing N's.")
 	flags.Parse(os.Args[2:])
 	input := bufio.NewReader(os.Stdin)
 	output := bufio.NewWriter(os.Stdout)
@@ -51,7 +49,7 @@ func Trim() {
 		}
 		output = bufio.NewWriter(file)
 	}
-	qtrim.TrimIO(input, output, mean, window, minLength, trimN)
+	qtrim.TrimIO(input, output, mean, window, minLength)
 }
 
 func Plot() {
