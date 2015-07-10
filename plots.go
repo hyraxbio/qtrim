@@ -1,7 +1,7 @@
 package qtrim
 
 import (
-	"code.hyraxbio.co.za/bioutil"
+	"github.com/hyraxbio/bioutil"
 	"fmt"
 	plotly "github.com/baruchlubinsky/go-plotly"
 )

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"code.hyraxbio.co.za/qtrim"
+	"github.com/hyraxbio/qtrim"
 	"os"
 )
 

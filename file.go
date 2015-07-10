@@ -2,8 +2,8 @@ package qtrim
 
 import (
 	"bufio"
-	"code.hyraxbio.co.za/bioutil"
-	"code.hyraxbio.co.za/bioutil/dnaio"
+	"github.com/hyraxbio/bioutil"
+	"github.com/hyraxbio/bioutil/dnaio"
 	"os"
 )
 

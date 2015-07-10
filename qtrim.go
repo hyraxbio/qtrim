@@ -1,7 +1,7 @@
 package qtrim
 
 import (
-	"code.hyraxbio.co.za/bioutil"
+	"github.com/hyraxbio/bioutil"
 )
 
 var base byte = []byte("!")[0]
