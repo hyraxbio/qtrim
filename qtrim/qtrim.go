@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
+	"code.hyraxbio.co.za/qtrim"
 	"flag"
 	"fmt"
-	"github.com/hyraxbio/qtrim"
 	"os"
 )
 
